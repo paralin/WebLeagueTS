@@ -246,6 +246,13 @@ updateTeamspeak = (myid)->
             channel_flag_permanent: 1
             channel_password: "#{match.Info.Owner}"
             pid: rchann
+          currentChannels["Broadcaster #{mid} #1"] =
+            channel_name: "Broadcaster #{mid} #1"
+            channel_codec_quality: 10
+            channel_description: "Broadcaster channel for match #{mid}."
+            channel_flag_permanent: 1
+            channel_password: "#{match.Info.Owner}"
+            pid: rchann
       for id, chan of defaultChannels
         currentChannels[id] = chan
       for id, chan of currentServerChannels
