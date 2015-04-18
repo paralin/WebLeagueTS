@@ -1,0 +1,18 @@
+{
+  "name": "webleaguets",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.coffee",
+  "scripts": {
+    "start": "coffee index.coffee",
+    "startForever": "forever start -c coffee index.coffee && sleep 1 && forever logs 0 -f",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christian Stewart",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^3.7.0",
+    "mongoose": "^4.0.1",
+    "node-teamspeak": "1.0.10"
+  }
+}
