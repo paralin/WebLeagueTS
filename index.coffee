@@ -325,7 +325,7 @@ updateTeamspeak = (myid)->
           if user?
             uplyr = null
             umatch = _.find matches, (match)->
-              uplyr = _.findWhere(match.Players, {SID: user.steam.steamid})
+              uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
               uplyr?
             mid = null
             teamn = null
@@ -338,7 +338,7 @@ updateTeamspeak = (myid)->
               tchan = currentChannels[cname]
               if tchan.cid isnt client.cid
                 log "moving client #{client.client_nickname} into #{cname}"
-                cl.send 'clientmove', {cid: tchan.cid, clid: client.id}, (err)->
+                cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
                   if err?
                     log "unable to move client to channel... #{util.inspect err}"
             else
