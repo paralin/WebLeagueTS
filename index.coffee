@@ -361,8 +361,10 @@ updateTeamspeak = (myid)->
                 if err?
                   log "can't send text message to #{client.client_nickname}, #{util.inspect err}"
 
+        clids = []
         clients.forEach (client)->
           return unless client.client_type is 0
+          clids.push client.clid
           uid = client.client_unique_identifier
           user = userCache[uid]
 
@@ -377,6 +379,8 @@ updateTeamspeak = (myid)->
               checkClient client, user
           else
             checkClient client, user
+
+        checkedUids = _.union clids
 
         nextUpdate()
 
