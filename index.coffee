@@ -333,7 +333,7 @@ updateTeamspeak = (myid)->
             uplyr = null
             umatch = _.find matches, (match)->
               uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
-              uplyr?
+              uplyr? and uplyr.team < 2
             mid = null
             teamn = null
             cname = null
@@ -396,7 +396,3 @@ updateTeamspeak = (myid)->
         nextUpdate()
 
 initClient()
-
-
-
-
