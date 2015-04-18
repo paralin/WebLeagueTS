@@ -75,7 +75,7 @@ defaultChannels =
     channel_flag_permanent: 1
     channel_description: "Chat for CS:go games."
   "[spacer1]":
-    channel_name: "[spacer0]"
+    channel_name: "[spacer1]"
     channel_flag_permanent: 1
     channel_max_clients: 0
     channel_flag_maxclients_unlimited: 0
@@ -380,11 +380,15 @@ updateTeamspeak = (myid)->
                   log "can't send text message to #{client.client_nickname}, #{util.inspect err}"
 
         clids = []
+        invGroups = _.invert serverGroups
+        nonPlayer = invGroups["NonPlayer"]
         clients.forEach (client)->
           return unless client.client_type is 0
+          return if nonPlayer? and "#{client.client_servergroups}" is nonPlayer
           clids.push client.clid
           uid = client.client_unique_identifier
           user = userCache[uid]
+
 
           if !user? and uid not in checkedUids
             checkedUids.push uid
