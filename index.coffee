@@ -55,12 +55,12 @@ defaultChannels =
     channel_flag_permanent: 1
     channel_description: "General chat."
   "Lounge 2":
-    channel_name: "Lounge 1"
+    channel_name: "Lounge 2"
     channel_codec_quality: 10
     channel_flag_permanent: 1
     channel_description: "General chat."
   "Lounge 3":
-    channel_name: "Lounge 1"
+    channel_name: "Lounge 3"
     channel_codec_quality: 10
     channel_flag_permanent: 1
     channel_description: "General chat."
