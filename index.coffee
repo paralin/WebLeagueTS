@@ -68,17 +68,6 @@ defaultChannels =
     channel_flag_permanent: 1
     channel_max_clients: 0
     channel_flag_maxclients_unlimited: 0
-  "Counter Strike":
-    channel_name: "Counter Strike"
-    channel_codec_quality: 10
-    channel_flag_default: 1
-    channel_flag_permanent: 1
-    channel_description: "Chat for CS:go games."
-  "[spacer1]":
-    channel_name: "[spacer1]"
-    channel_flag_permanent: 1
-    channel_max_clients: 0
-    channel_flag_maxclients_unlimited: 0
 
 serverGroups = {}
 cl = null
