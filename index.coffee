@@ -49,21 +49,6 @@ defaultChannels =
     channel_flag_default: 1
     channel_flag_permanent: 1
     channel_description: "General chat."
-  "Lounge 1":
-    channel_name: "Lounge 1"
-    channel_codec_quality: 10
-    channel_flag_permanent: 1
-    channel_description: "General chat."
-  "Lounge 2":
-    channel_name: "Lounge 2"
-    channel_codec_quality: 10
-    channel_flag_permanent: 1
-    channel_description: "General chat."
-  "Lounge 3":
-    channel_name: "Lounge 3"
-    channel_codec_quality: 10
-    channel_flag_permanent: 1
-    channel_description: "General chat."
   "AFK":
     channel_name: "AFK"
     channel_codec_quality: 1
@@ -298,7 +283,7 @@ updateTeamspeak = (myid)->
                       log "created channel #{schan.channel_name}"
 
       for id, chan of currentServerChannels
-        if !currentChannels[id]?
+        if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_description.indexOf("adminperm") > -1)
           cl.send 'channeldelete', {force: 1, cid: chan.cid}, (err)->
             if err?
               log "unable to delete #{id}, #{util.inspect err}"
