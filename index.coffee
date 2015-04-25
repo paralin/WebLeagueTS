@@ -284,6 +284,7 @@ updateTeamspeak = (myid)->
 
       for id, chan of currentServerChannels
         if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_description.indexOf("adminperm") > -1)
+          log util.inspect chan
           cl.send 'channeldelete', {force: 1, cid: chan.cid}, (err)->
             if err?
               log "unable to delete #{id}, #{util.inspect err}"
