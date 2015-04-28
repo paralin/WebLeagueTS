@@ -49,6 +49,21 @@ defaultChannels =
     channel_flag_default: 1
     channel_flag_permanent: 1
     channel_description: "General chat."
+  "Lounge 1":
+    channel_name: "Lounge 1"
+    channel_codec_quality: 10
+    channel_flag_permanent: 1
+    channel_description: "Lounge 1"
+  "Lounge 2":
+    channel_name: "Lounge 2"
+    channel_codec_quality: 10
+    channel_flag_permanent: 1
+    channel_description: "Lounge 2"
+  "Lounge 3":
+    channel_name: "Lounge 3"
+    channel_codec_quality: 10
+    channel_flag_permanent: 1
+    channel_description: "Lounge 3"
   "AFK":
     channel_name: "AFK"
     channel_codec_quality: 1
