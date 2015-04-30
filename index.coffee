@@ -30,6 +30,15 @@ if !tsIp?
   console.log "TEAMSPEAK_IP env variable required!"
   return
 
+tsPort = process.env.TEAMSPEAK_PORT
+if !tsPort?
+  parts = tsIp.split ":"
+  if parts? && parts.length is 2
+    tsPort = parseInt parts[1]
+  else
+    console.log "Using default teamspeak_port"
+    tsPort = 10011
+
 tsUser = process.env.TEAMSPEAK_USER
 if !tsUser?
   console.log "TEAMSPEAK_USER env variable required!"
@@ -117,7 +126,7 @@ initNotify = (cb)->
     cb()
 
 initClient = ->
-  cl = new TeamSpeakClient(tsIp)
+  cl = new TeamSpeakClient(tsIp, tsPort)
   cl.on "connect", ->
     connected = true
     cid++
