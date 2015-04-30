@@ -35,6 +35,7 @@ if !tsPort?
   parts = tsIp.split ":"
   if parts? && parts.length is 2
     tsPort = parseInt parts[1]
+    tsIp = parts[0]
   else
     console.log "Using default teamspeak_port"
     tsPort = 10011
