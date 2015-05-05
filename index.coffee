@@ -240,7 +240,9 @@ updateTeamspeak = (myid)->
         if match.Info.MatchType == 0
           capt = _.findWhere match.Details.Players, {SID: match.Info.Owner}
           rchann = "#{capt.Name}'s Startgame"
-        else
+        else if match.Info.MatchType == 2
+          return
+        else if match.Info.MatchType == 1
           capts = _.filter match.Details.Players, (plyr)-> plyr.IsCaptain
           rchann = "#{capts[0].Name} vs. #{capts[1].Name}"
 
@@ -358,6 +360,7 @@ updateTeamspeak = (myid)->
           if user?
             uplyr = null
             umatch = _.find matches, (match)->
+              return false if match.Info.MatchType > 1
               uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
               uplyr? and uplyr.Team < 2
             mid = null
