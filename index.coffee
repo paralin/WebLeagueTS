@@ -1,6 +1,7 @@
 mongoose = require "mongoose"
 ActiveMatch = require "./model/activeMatch"
 User        = require "./model/user"
+League      = require "./model/league"
 TeamSpeakClient = require "node-teamspeak"
 util        = require "util"
 _  = require "lodash"
@@ -235,214 +236,232 @@ updateTeamspeak = (myid)->
         echan.cid = chan.cid
         echan.pid = chan.pid
 
-    # First check acive matches
-    ActiveMatch.find {}, (err, matches)->
+    League.find {}, (err, leagues)->
       if err?
-        log "error fetching active matches, #{util.inspect err}"
+        log "error finding active leagues, #{util.inspect err}"
         return nextUpdate()
-      matches.forEach (match)->
-        mid = match.Details.MatchId || 0
-        rchann = ""
-        if match.Info.MatchType == 0
-          capt = _.findWhere match.Details.Players, {SID: match.Info.Owner}
-          rchann = "#{capt.Name}'s Startgame"
-        else if match.Info.MatchType == 2
-          return
-        else if match.Info.MatchType == 1
-          capts = _.filter match.Details.Players, (plyr)-> plyr.IsCaptain
-          rchann = "#{capts[0].Name} vs. #{capts[1].Name}"
 
-        schan = currentServerChannels[rchann]
-        if schan?
-          currentChannels[rchann] = schan
-          subs = _.filter _.values(currentServerChannels), (chan)-> chan.pid is schan.cid
-          for sub in subs
-            currentChannels[sub.channel_name] = sub
-        else
-          currentChannels[rchann] =
-            channel_name: rchann
-            channel_codec_quality: 10
-            channel_description: "Root channel for match #{mid}."
-            channel_flag_permanent: 1
-            channel_password: "#{match.Info.Owner}"
-          currentChannels["Radiant #{mid}"] =
-            channel_name: "Radiant #{mid}"
-            channel_codec_quality: 10
-            channel_description: "Radiant channel for match #{mid}."
-            channel_flag_permanent: 1
-            channel_password: "#{match.Info.Owner}"
-            pid: rchann
-          currentChannels["Dire #{mid}"] =
-            channel_name: "Dire #{mid}"
-            channel_codec_quality: 10
-            channel_description: "Dire channel for match #{mid}."
-            channel_flag_permanent: 1
-            channel_password: "#{match.Info.Owner}"
-            pid: rchann
-          currentChannels["Spectator #{mid} #1"] =
-            channel_name: "Spectator #{mid} #1"
-            channel_codec_quality: 10
-            channel_description: "Spectator #1 channel for match #{mid}."
-            channel_flag_permanent: 1
-            #channel_password: "#{match.Info.Owner}"
-            pid: rchann
-      for id, chan of defaultChannels
-        currentChannels[id] = chan
-      for id, chan of currentServerChannels
-        continue unless defaultChannels[id]?
-        currentChannels[id] = chan if currentChannels[id]?
-      _.keys(currentChannels).forEach (id)->
-        chan = currentChannels[id]
-        return if _.isString(chan.pid)
-        if !currentServerChannels[id]?
-          cl.send 'channelcreate', chan, (err, res)->
-            if err?
-              log "unable to create channel #{id}, #{util.inspect err}"
-            else
-              cl.send 'channelfind', {pattern: id}, (err, pchan)->
-                if err?
-                  log "can't find channel I just created, #{util.inspect err}"
-                  return
-                chan.cid = pchan.cid
-                log "created channel #{chan.channel_name}"
-                subchans = _.filter _.values(currentChannels), (schan)-> schan.pid is id
-                subchans.forEach (schan)->
-                  schan.cpid = schan.pid = chan.cid
-                  log schan
-                  cl.send 'channelcreate', schan, (err, resp)->
-                    if err?
-                      log "unable to create channel #{schan.channel_name}, #{util.inspect err}"
-                    else
-                      log "created channel #{schan.channel_name}"
+      leagues.forEach (league)->
+        lid = league._id
+        rchan = league.Name
+        if league.IsActive
+          exist = currentServerChannels[rchan]
+          if exist?
+            currentChannels[rchan] = exist
+          else
+            currentChannels[rchan] =
+              channel_name: rchan
+              channel_codec_quality: 10
+              channel_description: "Lobby for league #{league.Name}."
+              channel_flag_permanent: 1
 
-      for id, chan of currentServerChannels
-        if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_description.indexOf("adminperm") > -1)
-          log util.inspect chan
-          cl.send 'channeldelete', {force: 1, cid: chan.cid}, (err)->
-            if err?
-              log "unable to delete #{id}, #{util.inspect err}"
-            else
-              log "deleted channel #{id}"
-
-      cl.send 'clientlist', ['uid', 'away', 'voice', 'times', 'groups', 'info'], (err, clients)->
+      ActiveMatch.find {}, (err, matches)->
         if err?
-          log "unable to fetch clients, #{util.inspect err}"
+          log "error fetching active matches, #{util.inspect err}"
           return nextUpdate()
+        matches.forEach (match)->
+          mid = match.Details.MatchId || 0
+          rchann = ""
+          if match.Info.MatchType == 0
+            capt = _.findWhere match.Details.Players, {SID: match.Info.Owner}
+            rchann = "#{capt.Name}'s Startgame"
+          else if match.Info.MatchType == 2
+            return
+          else if match.Info.MatchType == 1
+            capts = _.filter match.Details.Players, (plyr)-> plyr.IsCaptain
+            rchann = "#{capts[0].Name} vs. #{capts[1].Name}"
 
-        return nextUpdate() if !clients?
-        clients = [clients] if _.isObject(clients) and !_.isArray(clients)
-        invGroups = _.invert serverGroups
-
-        checkClient = (client, user)->
-          targetGroups = []
-
-          onlineUsersNow.push user._id if user._id not in onlineUsersNow
-          if user._id not in onlineUsers
-            User.update {_id: user._id}, {$set: {tsonline: true}}, (err)->
-              if err?
-                console.log "Unable to mark #{user._id} as tsonline, #{err}"
-
-          if !user? or !user.vouch?
-            targetGroups.push parseInt invGroups["Guest"]
-          else if "admin" in user.authItems
-            targetGroups.push parseInt invGroups["Server Admin"]
+          schan = currentServerChannels[rchann]
+          if schan?
+            currentChannels[rchann] = schan
+            subs = _.filter _.values(currentServerChannels), (chan)-> chan.pid is schan.cid
+            for sub in subs
+              currentChannels[sub.channel_name] = sub
           else
-            targetGroups.push parseInt invGroups["Normal"]
-
-          groups = []
-          if _.isNumber client.client_servergroups
-            groups.push client.client_servergroups
-          else if _.isString client.client_servergroups
-            groups = client.client_servergroups.split(',').map(parseInt)
-
-          for id in targetGroups
-            unless id in groups
-              log "adding server group #{serverGroups[id]} to #{client.client_nickname}"
-              cl.send 'servergroupaddclient', {sgid: id, cldbid: client.client_database_id}, (err)->
-                if err?
-                  log "unable to assign group, #{util.inspect err}"
-
-          for id in groups
-            unless id in targetGroups
-              log "removing server group #{serverGroups[id]} from #{client.client_nickname}"
-              cl.send 'servergroupdelclient', {sgid: id, cldbid: client.client_database_id}, (err, resp)->
-                if err?
-                  log "unable to remove group, #{util.inspect err}"
-
-          uchan = currentChannels["Unknown"]
-          if user?
-            uplyr = null
-            umatch = _.find matches, (match)->
-              return false if match.Info.MatchType > 1
-              uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
-              uplyr? and uplyr.Team < 2
-            mid = null
-            teamn = null
-            cname = null
-            if umatch?
-              mid = umatch.Details.MatchId
-              teamn = if uplyr.Team is 0 then "Radiant" else "Dire"
-              cname = teamn+" "+mid
-            if umatch? && currentChannels[cname]? && currentChannels[cname].cid? && currentChannels[cname].cid isnt 0
-              tchan = currentChannels[cname]
-              if tchan.cid isnt client.cid
-                log "moving client #{client.client_nickname} into #{cname}"
-                cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
+            currentChannels[rchann] =
+              channel_name: rchann
+              channel_codec_quality: 10
+              channel_description: "Root channel for match #{mid}."
+              channel_flag_permanent: 1
+              channel_password: "#{match.Info.Owner}"
+            currentChannels["Radiant #{mid}"] =
+              channel_name: "Radiant #{mid}"
+              channel_codec_quality: 10
+              channel_description: "Radiant channel for match #{mid}."
+              channel_flag_permanent: 1
+              channel_password: "#{match.Info.Owner}"
+              pid: rchann
+            currentChannels["Dire #{mid}"] =
+              channel_name: "Dire #{mid}"
+              channel_codec_quality: 10
+              channel_description: "Dire channel for match #{mid}."
+              channel_flag_permanent: 1
+              channel_password: "#{match.Info.Owner}"
+              pid: rchann
+            currentChannels["Spectator #{mid} #1"] =
+              channel_name: "Spectator #{mid} #1"
+              channel_codec_quality: 10
+              channel_description: "Spectator #1 channel for match #{mid}."
+              channel_flag_permanent: 1
+              #channel_password: "#{match.Info.Owner}"
+              pid: rchann
+        for id, chan of defaultChannels
+          currentChannels[id] = chan
+        for id, chan of currentServerChannels
+          continue unless defaultChannels[id]?
+          currentChannels[id] = chan if currentChannels[id]?
+        _.keys(currentChannels).forEach (id)->
+          chan = currentChannels[id]
+          return if _.isString(chan.pid)
+          if !currentServerChannels[id]?
+            cl.send 'channelcreate', chan, (err, res)->
+              if err?
+                log "unable to create channel #{id}, #{util.inspect err}"
+              else
+                cl.send 'channelfind', {pattern: id}, (err, pchan)->
                   if err?
-                    log "unable to move client to channel... #{util.inspect err}"
+                    log "can't find channel I just created, #{util.inspect err}"
+                    return
+                  chan.cid = pchan.cid
+                  log "created channel #{chan.channel_name}"
+                  subchans = _.filter _.values(currentChannels), (schan)-> schan.pid is id
+                  subchans.forEach (schan)->
+                    schan.cpid = schan.pid = chan.cid
+                    log schan
+                    cl.send 'channelcreate', schan, (err, resp)->
+                      if err?
+                        log "unable to create channel #{schan.channel_name}, #{util.inspect err}"
+                      else
+                        log "created channel #{schan.channel_name}"
+
+        for id, chan of currentServerChannels
+          if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_description.indexOf("adminperm") > -1)
+            log util.inspect chan
+            cl.send 'channeldelete', {force: 1, cid: chan.cid}, (err)->
+              if err?
+                log "unable to delete #{id}, #{util.inspect err}"
+              else
+                log "deleted channel #{id}"
+
+        cl.send 'clientlist', ['uid', 'away', 'voice', 'times', 'groups', 'info'], (err, clients)->
+          if err?
+            log "unable to fetch clients, #{util.inspect err}"
+            return nextUpdate()
+
+          return nextUpdate() if !clients?
+          clients = [clients] if _.isObject(clients) and !_.isArray(clients)
+          invGroups = _.invert serverGroups
+
+          checkClient = (client, user)->
+            targetGroups = []
+
+            onlineUsersNow.push user._id if user._id not in onlineUsersNow
+            if user._id not in onlineUsers
+              User.update {_id: user._id}, {$set: {tsonline: true}}, (err)->
+                if err?
+                  console.log "Unable to mark #{user._id} as tsonline, #{err}"
+
+            if !user? or !user.vouch?
+              targetGroups.push parseInt invGroups["Guest"]
+            else if "admin" in user.authItems
+              targetGroups.push parseInt invGroups["Server Admin"]
             else
-              tchan = currentChannels["Lobby"]
-              if uchan.cid? && client.cid is uchan.cid && tchan.cid? && tchan.cid != 0
-                log "moving client #{client.client_nickname} out of unknown channel"
+              targetGroups.push parseInt invGroups["Normal"]
+
+            groups = []
+            if _.isNumber client.client_servergroups
+              groups.push client.client_servergroups
+            else if _.isString client.client_servergroups
+              groups = client.client_servergroups.split(',').map(parseInt)
+
+            for id in targetGroups
+              unless id in groups
+                log "adding server group #{serverGroups[id]} to #{client.client_nickname}"
+                cl.send 'servergroupaddclient', {sgid: id, cldbid: client.client_database_id}, (err)->
+                  if err?
+                    log "unable to assign group, #{util.inspect err}"
+
+            for id in groups
+              unless id in targetGroups
+                log "removing server group #{serverGroups[id]} from #{client.client_nickname}"
+                cl.send 'servergroupdelclient', {sgid: id, cldbid: client.client_database_id}, (err, resp)->
+                  if err?
+                    log "unable to remove group, #{util.inspect err}"
+
+            uchan = currentChannels["Unknown"]
+            if user?
+              uplyr = null
+              umatch = _.find matches, (match)->
+                return false if match.Info.MatchType > 1
+                uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
+                uplyr? and uplyr.Team < 2
+              mid = null
+              teamn = null
+              cname = null
+              if umatch?
+                mid = umatch.Details.MatchId
+                teamn = if uplyr.Team is 0 then "Radiant" else "Dire"
+                cname = teamn+" "+mid
+              if umatch? && currentChannels[cname]? && currentChannels[cname].cid? && currentChannels[cname].cid isnt 0
+                tchan = currentChannels[cname]
+                if tchan.cid isnt client.cid
+                  log "moving client #{client.client_nickname} into #{cname}"
+                  cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
+                    if err?
+                      log "unable to move client to channel... #{util.inspect err}"
+              else
+                tchan = currentChannels["Lobby"]
+                if uchan.cid? && client.cid is uchan.cid && tchan.cid? && tchan.cid != 0
+                  log "moving client #{client.client_nickname} out of unknown channel"
+                  cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
+                    if err?
+                      log "unable to move client to lobby... #{util.inspect err}"
+            else
+              tchan = currentChannels["Unknown"]
+              if tchan.cid? && tchan.cid != 0 && client.cid isnt tchan.cid
+                log "moving client #{client.client_nickname} to the unknown channel"
                 cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
                   if err?
-                    log "unable to move client to lobby... #{util.inspect err}"
-          else
-            tchan = currentChannels["Unknown"]
-            if tchan.cid? && tchan.cid != 0 && client.cid isnt tchan.cid
-              log "moving client #{client.client_nickname} to the unknown channel"
-              cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
+                    log "unable to move client to unknown channel... #{util.inspect err}"
+              unless client.clid in messagedUids
+                messagedUids.push client.clid
+                cl.send 'sendtextmessage', {targetmode: 1, target: client.clid, msg: "Welcome to the FPL teamspeak. Please paste your token here. Read the description of this channel for instructions if needed."}, (err)->
+                  if err?
+                    log "can't send text message to #{client.client_nickname}, #{util.inspect err}"
+
+          clids = []
+          invGroups = _.invert serverGroups
+          nonPlayer = invGroups["NonPlayer"]
+          clients.forEach (client)->
+            return unless client.client_type is 0
+            return if nonPlayer? and "#{client.client_servergroups}" is nonPlayer
+            clids.push client.clid
+            uid = client.client_unique_identifier
+            user = userCache[uid]
+
+
+            if !user? and uid not in checkedUids
+              checkedUids.push uid
+              User.findOne {tsuniqueids: uid}, (err, usr)->
                 if err?
-                  log "unable to move client to unknown channel... #{util.inspect err}"
-            unless client.clid in messagedUids
-              messagedUids.push client.clid
-              cl.send 'sendtextmessage', {targetmode: 1, target: client.clid, msg: "Welcome to the FPL teamspeak. Please paste your token here. Read the description of this channel for instructions if needed."}, (err)->
-                if err?
-                  log "can't send text message to #{client.client_nickname}, #{util.inspect err}"
-
-        clids = []
-        invGroups = _.invert serverGroups
-        nonPlayer = invGroups["NonPlayer"]
-        clients.forEach (client)->
-          return unless client.client_type is 0
-          return if nonPlayer? and "#{client.client_servergroups}" is nonPlayer
-          clids.push client.clid
-          uid = client.client_unique_identifier
-          user = userCache[uid]
-
-
-          if !user? and uid not in checkedUids
-            checkedUids.push uid
-            User.findOne {tsuniqueids: uid}, (err, usr)->
-              if err?
-                log "unable to lookup #{uid}, #{util.inspect err}"
-                return
-              if usr?
-                user = userCache[uid] = usr.toObject()
+                  log "unable to lookup #{uid}, #{util.inspect err}"
+                  return
+                if usr?
+                  user = userCache[uid] = usr.toObject()
+                checkClient client, user
+            else
               checkClient client, user
-          else
-            checkClient client, user
 
-        checkedUids = _.union clids
+          checkedUids = _.union clids
 
-        for onlineu in onlineUsers
-          unless onlineu in onlineUsersNow
-            User.update {_id: onlineu}, {$set: {tsonline: false}}, (err)->
-              if err?
-                console.log "Unable to set user #{onlineu} to offline, #{err}"
-        onlineUsers = onlineUsersNow
-        onlineUsersNow = []
+          for onlineu in onlineUsers
+            unless onlineu in onlineUsersNow
+              User.update {_id: onlineu}, {$set: {tsonline: false}}, (err)->
+                if err?
+                  console.log "Unable to set user #{onlineu} to offline, #{err}"
+          onlineUsers = onlineUsersNow
+          onlineUsersNow = []
 
-        nextUpdate()
+          nextUpdate()
 
 initClient()
