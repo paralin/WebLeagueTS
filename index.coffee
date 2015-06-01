@@ -465,9 +465,12 @@ updateTeamspeak = (myid)->
                 tchan = currentChannels["Lobby"]
                 if uchan.cid? && client.cid is uchan.cid && tchan.cid? && tchan.cid != 0
                   log "moving client #{client.client_nickname} out of unknown channel"
-                  cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
-                    if err?
-                      log "unable to move client to lobby... #{util.inspect err}"
+                  if user.vouch.leagues.length > 0
+                    moveClientToHome(client, currentServerChannels)
+                  else
+                    cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
+                      if err?
+                        log "unable to move client to lobby... #{util.inspect err}"
             else
               tchan = currentChannels["Unknown"]
               if tchan.cid? && tchan.cid != 0 && client.cid isnt tchan.cid
