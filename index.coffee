@@ -233,7 +233,7 @@ updateTeamspeak = (myid)->
     npdcalled = true
     setTimeout ->
       updateTeamspeak(myid)
-    , 1000
+    , 2000
 
   if pend.length > 0
     log "commands still pending, deferring update"

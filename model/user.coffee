@@ -46,5 +46,6 @@ UserSchema = mongoose.Schema(
   channels: [ String ]
   tsuniqueids: [ String ]
   tsonetimeid: String)
+  tsonline: Boolean
 
 module.exports = mongoose.model('users', UserSchema)
