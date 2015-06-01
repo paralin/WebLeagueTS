@@ -125,6 +125,19 @@ userCache   = {}
 checkedUids = []
 messagedUids = []
 onlineUsers = []
+lastClients = null
+lastLeagues = null
+
+moveClientToHome = (client, currentServerChannels)->
+  user = userCache[client.client_unique_identifier]
+  if user? and user.profile.leagues.length > 0 and lastLeagues?
+    league = _.findWhere lastLeagues, {_id: user.profile.leagues[0]}
+    if league?
+      chan = currentServerChannels[league.Name]
+      if chan? and chan.cid?
+        cl.send 'clientmove', {cid: chan.cid, clid: client.clid}, (err)->
+          if err?
+            console.log "Can't move client to his home, #{err}"
 
 initServerGroups = (cb)->
   cl.send 'servergrouplist', (err, resp)->
@@ -256,6 +269,8 @@ updateTeamspeak = (myid)->
         log "error finding active leagues, #{util.inspect err}"
         return nextUpdate()
 
+      lastLeagues = leagues
+
       leagues.forEach (league)->
         lid = league._id
         rchan = league.Name
@@ -352,6 +367,9 @@ updateTeamspeak = (myid)->
         for id, chan of currentServerChannels
           if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_description.indexOf("adminperm") > -1)
             log util.inspect chan
+            if lastClients?
+              for client in lastClients
+                moveClientToHome(client, currentServerChannels) if client.cid is chan.cid
             cl.send 'channeldelete', {force: 1, cid: chan.cid}, (err)->
               if err?
                 log "unable to delete #{id}, #{util.inspect err}"
@@ -366,6 +384,8 @@ updateTeamspeak = (myid)->
           return nextUpdate() if !clients?
           clients = [clients] if _.isObject(clients) and !_.isArray(clients)
           invGroups = _.invert serverGroups
+
+          lastClients = clients
 
           checkClient = (client, user)->
             targetGroups = []
