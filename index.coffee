@@ -109,8 +109,6 @@ defaultChannels =
     channel_description: "This is a temporary channel, the bot should move you out immediately."
     channel_flag_permanent: 1
     channel_flag_default: 1
-    channel_forced_silence: 1
-    channel_password: "youcantjointhisskrub"
   "Lobby":
     channel_name: "Lobby"
     channel_codec_quality: 10
