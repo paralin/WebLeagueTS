@@ -98,6 +98,21 @@ defaultChannels =
     channel_flag_permanent: 1
     channel_max_clients: 0
     channel_flag_maxclients_unlimited: 0
+  "[spacer1]":
+    channel_name: "[spacer1]"
+    channel_flag_permanent: 1
+    channel_max_clients: 0
+    channel_flag_maxclients_unlimited: 0
+  "[spacer2]":
+    channel_name: "[spacer2]"
+    channel_flag_permanent: 1
+    channel_max_clients: 0
+    channel_flag_maxclients_unlimited: 0
+  "[spacer3]":
+    channel_name: "[spacer3]"
+    channel_flag_permanent: 1
+    channel_max_clients: 0
+    channel_flag_maxclients_unlimited: 0
 
 serverGroups = {}
 cl = null
