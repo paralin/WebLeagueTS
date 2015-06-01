@@ -122,6 +122,7 @@ me = null
 connected = false
 clientCache = {}
 userCache   = {}
+lastCurrentServerChannels = {}
 checkedUids = []
 messagedUids = []
 onlineUsers = []
@@ -130,8 +131,8 @@ lastLeagues = null
 
 moveClientToHome = (client, currentServerChannels)->
   user = userCache[client.client_unique_identifier]
-  if user? and user.profile.leagues.length > 0 and lastLeagues?
-    league = _.findWhere lastLeagues, {_id: user.profile.leagues[0]}
+  if user? and user.vouch.leagues.length > 0 and lastLeagues?
+    league = _.findWhere lastLeagues, {_id: user.vouch.leagues[0]}
     if league?
       chan = currentServerChannels[league.Name]
       if chan? and chan.cid?
@@ -143,7 +144,7 @@ moveClientToHome = (client, currentServerChannels)->
     else
       console.log "Unable to move client home, league #{user.profile.leagues[0]} not found."
   else
-    console.log "Unable to move user #{client.clid} home, user = #{util.inspect user}"
+    console.log "Unable to move user #{client.clid} home, user = #{util.inspect user} client = #{util.inspect client}"
 
 initServerGroups = (cb)->
   cl.send 'servergrouplist', (err, resp)->
@@ -201,7 +202,6 @@ initClient = ->
   cl.on "textmessage", (msg)->
     return if msg.targetmode isnt 1 or msg.invokerid is me.client_id
     log "CHAT #{msg.invokername}: #{msg.msg}"
-    return moveClientToHome(client, lastCurrentServerChannels) if msg.msg is "moveme"
     cl.send 'clientinfo', {clid: msg.invokerid}, (err, client)->
       if err?
         log "can't lookup client, #{util.inspect err}"
@@ -210,8 +210,12 @@ initClient = ->
         log "no client for #{msg.invokerid}"
         return
 
+      client.clid = msg.invokerid
+
+      return moveClientToHome(client, lastCurrentServerChannels) if msg.msg is "moveme"
+
       uid = client.client_unique_identifier
-      User.findOne {tsonetimeid: msg.msg}, (err, usr)->
+      User.findOne {tsonetimeid: msg.msg.trim()}, (err, usr)->
         if err?
           log "unable to lookup tsonetimeid #{msg.msg}, #{util.inspect err}"
           return
@@ -237,7 +241,7 @@ initClient = ->
       initClient()
     , 10000
 
-lastCurrentServerChannels = {}
+currentServerChannels = {}
 updateTeamspeak = (myid)->
   if myid != cid or !connected
     log "terminating old update loop #{myid}"
@@ -283,7 +287,7 @@ updateTeamspeak = (myid)->
       leagues.forEach (league)->
         lid = league._id
         rchan = league.Name
-        if league.IsActive
+        if !league.Archived
           exist = currentServerChannels[rchan]
           if exist?
             currentChannels[rchan] = exist
