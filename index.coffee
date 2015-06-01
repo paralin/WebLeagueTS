@@ -52,6 +52,10 @@ if !tsPassword?
 
 mongoose.connect(process.env.MONGODB_URL)
 
+User.update {}, {$set: {tsonline: false}}, {multi: true}, (err)->
+  if err?
+    console.log "Unable to set tsonline to false on everyone, #{err}"
+
 defaultChannels =
   "Lobby":
     channel_name: "Lobby"
@@ -104,6 +108,7 @@ clientCache = {}
 userCache   = {}
 checkedUids = []
 messagedUids = []
+onlineUsers = []
 
 initServerGroups = (cb)->
   cl.send 'servergrouplist', (err, resp)->
@@ -205,6 +210,7 @@ updateTeamspeak = (myid)->
   currentServerChannels = {}
   pend = cl.getPending()
   updcalled = false
+  onlineUsersNow = []
 
   nextUpdate = ->
     return if npdcalled
@@ -329,6 +335,13 @@ updateTeamspeak = (myid)->
 
         checkClient = (client, user)->
           targetGroups = []
+
+          onlineUsersNow.push user._id if user._id not in onlineUsersNow
+          if user._id not in onlineUsers
+            User.update {_id: user._id}, {$set: {tsonline: true}}, (err)->
+              if err?
+                console.log "Unable to mark #{user._id} as tsonline, #{err}"
+
           if !user? or !user.vouch?
             targetGroups.push parseInt invGroups["Guest"]
           else if "admin" in user.authItems
@@ -421,6 +434,14 @@ updateTeamspeak = (myid)->
             checkClient client, user
 
         checkedUids = _.union clids
+
+        for onlineu in onlineUsers
+          unless onlineu in onlineUsersNow
+            User.update {_id: onlineu}, {$set: {tsonline: false}}, (err)->
+              if err?
+                console.log "Unable to set user #{onlineu} to offline, #{err}"
+        onlineUsers = onlineUsersNow
+        onlineUsersNow = []
 
         nextUpdate()
 
