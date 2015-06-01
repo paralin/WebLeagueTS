@@ -138,6 +138,12 @@ moveClientToHome = (client, currentServerChannels)->
         cl.send 'clientmove', {cid: chan.cid, clid: client.clid}, (err)->
           if err?
             console.log "Can't move client to his home, #{err}"
+      else
+        console.log "Unable to move client home, channel #{league.Name} not found."
+    else
+      console.log "Unable to move client home, league #{user.profile.leagues[0]} not found."
+  else
+    console.log "Unable to move user #{client.clid} home, user = #{util.inspect user}"
 
 initServerGroups = (cb)->
   cl.send 'servergrouplist', (err, resp)->
@@ -195,6 +201,7 @@ initClient = ->
   cl.on "textmessage", (msg)->
     return if msg.targetmode isnt 1 or msg.invokerid is me.client_id
     log "CHAT #{msg.invokername}: #{msg.msg}"
+    return moveClientToHome(client, lastCurrentServerChannels) if msg.msg is "moveme"
     cl.send 'clientinfo', {clid: msg.invokerid}, (err, client)->
       if err?
         log "can't lookup client, #{util.inspect err}"
@@ -230,12 +237,14 @@ initClient = ->
       initClient()
     , 10000
 
+lastCurrentServerChannels = {}
 updateTeamspeak = (myid)->
   if myid != cid or !connected
     log "terminating old update loop #{myid}"
     return
 
   currentChannels = {}
+  lastCurrentServerChannels = currentServerChannels
   currentServerChannels = {}
   pend = cl.getPending()
   updcalled = false
