@@ -61,9 +61,14 @@ defaultChannels =
   "Lobby":
     channel_name: "Lobby"
     channel_codec_quality: 10
-    channel_flag_default: 1
+    #channel_flag_default: 1
     channel_flag_permanent: 1
     channel_description: "General chat."
+  "[spacer2]":
+    channel_name: "[spacer2]"
+    channel_flag_permanent: 1
+    channel_max_clients: 0
+    channel_flag_maxclients_unlimited: 0
   "Lounge 1":
     channel_name: "Lounge 1"
     channel_codec_quality: 10
@@ -79,6 +84,11 @@ defaultChannels =
     channel_codec_quality: 10
     channel_flag_permanent: 1
     channel_description: "Lounge 3"
+  "[spacer1]":
+    channel_name: "[spacer1]"
+    channel_flag_permanent: 1
+    channel_max_clients: 0
+    channel_flag_maxclients_unlimited: 0
   "AFK":
     channel_name: "AFK"
     channel_codec_quality: 1
@@ -93,18 +103,22 @@ defaultChannels =
     channel_forced_silence: 1
     channel_needed_talk_power: 99999
     channel_password: "youcantjointhisskrub"
+  "Bounce":
+    channel_name: "Bounce"
+    channel_codec_quality: 1
+    channel_description: "This is a temporary channel, the bot should move you out immediately."
+    channel_flag_permanent: 1
+    channel_flag_default: 1
+    channel_forced_silence: 1
+    channel_password: "youcantjointhisskrub"
+  "Lobby":
+    channel_name: "Lobby"
+    channel_codec_quality: 10
+    #channel_flag_default: 1
+    channel_flag_permanent: 1
+    channel_description: "General chat."
   "[spacer0]":
     channel_name: "[spacer0]"
-    channel_flag_permanent: 1
-    channel_max_clients: 0
-    channel_flag_maxclients_unlimited: 0
-  "[spacer1]":
-    channel_name: "[spacer1]"
-    channel_flag_permanent: 1
-    channel_max_clients: 0
-    channel_flag_maxclients_unlimited: 0
-  "[spacer2]":
-    channel_name: "[spacer2]"
     channel_flag_permanent: 1
     channel_max_clients: 0
     channel_flag_maxclients_unlimited: 0
@@ -463,8 +477,9 @@ updateTeamspeak = (myid)->
                       log "unable to move client to channel... #{util.inspect err}"
               else
                 tchan = currentChannels["Lobby"]
-                if uchan.cid? && client.cid is uchan.cid && tchan.cid? && tchan.cid != 0
-                  log "moving client #{client.client_nickname} out of unknown channel"
+                bchan = currentChannels["Bounce"]
+                if ((bchan? and bchan.cid? and client.cid is bchan.cid) or (uchan.cid? && client.cid is uchan.cid)) && (tchan.cid? && tchan.cid != 0)
+                  log "moving client #{client.client_nickname} out of unknown/bounce channel"
                   if user.vouch.leagues.length > 0
                     moveClientToHome(client, currentServerChannels)
                   else
