@@ -370,14 +370,15 @@ updateTeamspeak = (myid)->
           checkClient = (client, user)->
             targetGroups = []
 
-            if user._id not in onlineUsers
-              User.update {_id: user._id}, {$set: {tsonline: true}}, (err)->
-                if err?
-                  console.log "Unable to mark #{user._id} as tsonline, #{err}"
-                else
-                  console.log "Marked #{user._id} as online"
+            if user?
+              if user._id not in onlineUsers
+                User.update {_id: user._id}, {$set: {tsonline: true}}, (err)->
+                  if err?
+                    console.log "Unable to mark #{user._id} as tsonline, #{err}"
+                  else
+                    console.log "Marked #{user._id} as online"
 
-            onlineUsersNow.push user._id if user._id not in onlineUsersNow
+              onlineUsersNow.push user._id if user._id not in onlineUsersNow
 
             if !user? or !user.vouch?
               targetGroups.push parseInt invGroups["Guest"]
