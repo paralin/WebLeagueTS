@@ -477,6 +477,8 @@ updateTeamspeak = (myid)->
               User.update {_id: onlineu}, {$set: {tsonline: false}}, (err)->
                 if err?
                   console.log "Unable to set user #{onlineu} to offline, #{err}"
+                else
+                  console.log "Marked user #{onlineu} as offline"
           onlineUsers = onlineUsersNow
           onlineUsersNow = []
 
