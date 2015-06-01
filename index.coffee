@@ -467,6 +467,9 @@ updateTeamspeak = (myid)->
                 cl.send 'sendtextmessage', {targetmode: 1, target: client.clid, msg: "Welcome to the FPL teamspeak. Please paste your token here. Read the description of this channel for instructions if needed."}, (err)->
                   if err?
                     log "can't send text message to #{client.client_nickname}, #{util.inspect err}"
+                  setTimeout ->
+                    messagedUids = _.without messagedUids, client.clid
+                  , 30000
 
           clids = []
           invGroups = _.invert serverGroups
