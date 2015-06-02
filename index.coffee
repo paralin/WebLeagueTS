@@ -408,9 +408,15 @@ updateTeamspeak = (myid)->
 
           return nextUpdate() if !clients?
           clients = [clients] if _.isObject(clients) and !_.isArray(clients)
-          invGroups = _.invert serverGroups
 
+          invGroups = _.invert serverGroups
           lastClients = clients
+
+          nUsrCache = {}
+          for id, usr of userCache
+            if _.findWhere(clients, {client_unique_identifier: id})?
+              nUsrCache[id] = usr
+          userCache = nUsrCache
 
           checkClient = (client, user)->
             targetGroups = []
