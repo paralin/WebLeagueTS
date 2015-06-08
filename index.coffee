@@ -237,7 +237,9 @@ initClient = ->
             if err?
               log "Unable to edit client #{client.cid}, #{util.inspect err}"
           user = userCache[uid] = usr.toObject()
-          User.update {_id: usr._id}, {$set: {tsuniqueids: [uid], tsonetimeid: null}}, (err)->
+          user.tsuniqueids = user.tsuniqueids || [uid]
+          user.tsuniqueids.push uid if uid not in user.tsuniqueids
+          User.update {_id: usr._id}, {$set: {tsuniqueids: user.tsuniqueids, tsonetimeid: null}}, (err)->
             if err?
               log "unable to save tsuniqueid, #{err}"
         else
