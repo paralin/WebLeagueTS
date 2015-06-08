@@ -237,6 +237,7 @@ initClient = ->
             if err?
               log "Unable to edit client #{client.cid}, #{util.inspect err}"
           user = userCache[uid] = usr.toObject()
+          user.nextUpdate = new Date().getTime()+300000 #5 minutes
           user.tsuniqueids = user.tsuniqueids || [uid]
           user.tsuniqueids.push uid if uid not in user.tsuniqueids
           User.update {_id: usr._id}, {$set: {tsuniqueids: user.tsuniqueids, tsonetimeid: null}}, (err)->
@@ -416,7 +417,7 @@ updateTeamspeak = (myid)->
 
           nUsrCache = {}
           for id, usr of userCache
-            if _.findWhere(clients, {client_unique_identifier: id})?
+            if _.findWhere(clients, {client_unique_identifier: id})? && usr.nextUpdate<(new Date().getTime())
               nUsrCache[id] = usr
           userCache = nUsrCache
 
@@ -517,7 +518,6 @@ updateTeamspeak = (myid)->
             clids.push client.clid
             uid = client.client_unique_identifier
             user = userCache[uid]
-
 
             if !user? and uid not in checkedUids
               checkedUids.push uid
