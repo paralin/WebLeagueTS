@@ -487,7 +487,7 @@ updateTeamspeak = (myid)->
                 bchan = currentChannels["Bounce"]
                 if ((bchan? and bchan.cid? and client.cid is bchan.cid) or (uchan.cid? && client.cid is uchan.cid)) && (tchan.cid? && tchan.cid != 0)
                   log "moving client #{client.client_nickname} out of unknown/bounce channel"
-                  if user.vouch.leagues.length > 0
+                  if user.vouch.leagues? && user.vouch.leagues.length > 0
                     moveClientToHome(client, currentServerChannels)
                   else
                     cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
