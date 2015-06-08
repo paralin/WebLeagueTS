@@ -138,6 +138,7 @@ lastCurrentServerChannels = {}
 checkedUids = []
 messagedUids = []
 onlineUsers = []
+onlineUsersNow = []
 lastClients = null
 lastLeagues = null
 
@@ -267,7 +268,6 @@ updateTeamspeak = (myid)->
   currentServerChannels = {}
   pend = cl.getPending()
   updcalled = false
-  onlineUsersNow = []
 
   nextUpdate = ->
     return if npdcalled
@@ -540,6 +540,7 @@ updateTeamspeak = (myid)->
                   console.log "Unable to set user #{onlineu} to offline, #{err}"
                 else
                   console.log "Marked user #{onlineu} as offline"
+
           onlineUsers = onlineUsersNow
           onlineUsersNow = []
 
