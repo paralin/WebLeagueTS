@@ -281,7 +281,7 @@ updateTeamspeak = (myid)->
     nextUpdate()
     return
 
-  cl.send 'channellist', (err, resp)->
+  cl.send 'channellist', ['topic', 'flags', 'limits'], (err, resp)->
     if err?
       log "error fetching client list, #{util.inspect err}"
       return nextUpdate()
@@ -393,7 +393,7 @@ updateTeamspeak = (myid)->
                         log "created channel #{schan.channel_name}"
 
         for id, chan of currentServerChannels
-          if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_description.indexOf("adminperm") > -1)
+          if !currentChannels[id]? and !(chan.channel_flag_permanent == 1 && chan.channel_topic.indexOf("adminperm") > -1)
             log util.inspect chan
             if lastClients?
               for client in lastClients
