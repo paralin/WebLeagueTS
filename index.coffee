@@ -526,10 +526,11 @@ updateTeamspeak = (myid)->
                   log "unable to lookup #{uid}, #{util.inspect err}"
                   return
                 if usr?
-                  cl.send 'clientedit', {clid: client.cid, client_description: usr.profile.name}, (err)->
-                    if err?
-                      log "Unable to edit client #{client.cid}, #{util.inspect err}"
                   user = userCache[uid] = usr.toObject()
+                  user.nextUpdate = new Date().getTime()+300000 #5 minutes
+                  cl.send 'clientedit', {clid: client.clid, client_description: usr.profile.name}, (err)->
+                    if err?
+                      log "Unable to edit client #{client.clid}, #{util.inspect err}"
                 checkClient client, user
             else
               checkClient client, user
