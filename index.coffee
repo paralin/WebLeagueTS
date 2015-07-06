@@ -200,7 +200,7 @@ initClient = ->
         if err?
           log "unable to select server, #{err}"
           return
-        cl.send 'instanceedit', {serverinstance_serverquery_flood_commands: 100}, (err)->
+        cl.send 'instanceedit', {serverinstance_serverquery_flood_commands: 999, serverinstance_serverquery_flood_time: 5}, (err)->
           log "error changing query flood limit, #{util.inspect err}" if err?
           initServerGroups ->
             initNotify ->
