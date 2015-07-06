@@ -144,20 +144,26 @@ lastLeagues = null
 
 moveClientToHome = (client, currentServerChannels)->
   user = userCache[client.client_unique_identifier]
-  if user? and user.vouch.leagues.length > 0 and lastLeagues?
-    league = _.findWhere lastLeagues, {_id: user.vouch.leagues[0]}
-    if league?
-      chan = currentServerChannels[league.Name]
+  if user?
+    if user.vouch.leagues.length > 0
+      if lastLeagues?
+        league = _.findWhere lastLeagues, {_id: user.vouch.leagues[0]}
+        if league?
+          chan = currentServerChannels[league.Name]
+          if chan? and chan.cid?
+            cl.send 'clientmove', {cid: chan.cid, clid: client.clid}, (err)->
+              if err?
+                console.log "Can't move client to his home, #{err}"
+          else
+            console.log "Unable to move client home, channel #{league.Name} not found."
+        else
+          console.log "Unable to move client home, league #{user.profile.leagues[0]} not found."
+    else
+      chan = currentServerChannels.Lobby
       if chan? and chan.cid?
         cl.send 'clientmove', {cid: chan.cid, clid: client.clid}, (err)->
           if err?
             console.log "Can't move client to his home, #{err}"
-      else
-        console.log "Unable to move client home, channel #{league.Name} not found."
-    else
-      console.log "Unable to move client home, league #{user.profile.leagues[0]} not found."
-  else
-    console.log "Unable to move user #{client.clid} home, user = #{util.inspect user} client = #{util.inspect client}"
 
 initServerGroups = (cb)->
   cl.send 'servergrouplist', (err, resp)->
