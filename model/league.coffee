@@ -8,6 +8,8 @@ LeagueSchema = mongoose.Schema({
   IsActive: Boolean,
   Archived: Boolean,
   CurrentSeason: Number,
+  NoChannel: Boolean,
+  SecondaryCurrentSeason: [Number],
   Seasons: [{
     Name: String,
     Prizepool: Number,
