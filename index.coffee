@@ -308,7 +308,7 @@ updateTeamspeak = (myid)->
       leagues.forEach (league)->
         lid = league._id
         rchan = league.Name
-        if !league.Archived
+        if !league.Archived && !league.NoChannel
           exist = currentServerChannels[rchan]
           if exist?
             currentChannels[rchan] = exist
