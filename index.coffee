@@ -469,36 +469,41 @@ updateTeamspeak = (myid)->
 
             uchan = currentChannels["Unknown"]
             if user?
-              uplyr = null
-              umatch = _.find matches, (match)->
-                return false if match.Info.MatchType > 1
-                uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
-                uplyr? and uplyr.Team < 2
-              mid = null
-              teamn = null
-              cname = null
-              if umatch?
-                mid = umatch.Details.MatchId
-                teamn = if uplyr.Team is 0 then "Radiant" else "Dire"
-                cname = teamn+" "+mid
-              if umatch? && currentChannels[cname]? && currentChannels[cname].cid? && currentChannels[cname].cid isnt 0
-                tchan = currentChannels[cname]
-                if tchan.cid isnt client.cid
-                  log "moving client #{client.client_nickname} into #{cname}"
-                  cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
-                    if err?
-                      log "unable to move client to channel... #{util.inspect err}"
+              if !user.vouch? or user.vouch.leagues.length is 0
+                cl.send 'clientkick', {clid: client.clid, reasonid: 5, reasonmsg: "You are not vouched into the league."}, (err)->
+                  if err?
+                    console.log "Cannot kick #{client.clid}, #{err}"
               else
-                tchan = currentChannels["Lobby"]
-                bchan = currentChannels["Bounce"]
-                if ((bchan? and bchan.cid? and client.cid is bchan.cid) or (uchan.cid? && client.cid is uchan.cid)) && (tchan.cid? && tchan.cid != 0)
-                  log "moving client #{client.client_nickname} out of unknown/bounce channel"
-                  if user.vouch.leagues? && user.vouch.leagues.length > 0
-                    moveClientToHome(client, currentServerChannels)
-                  else
+                uplyr = null
+                umatch = _.find matches, (match)->
+                  return false if match.Info.MatchType > 1
+                  uplyr = _.findWhere(match.Details.Players, {SID: user.steam.steamid})
+                  uplyr? and uplyr.Team < 2
+                mid = null
+                teamn = null
+                cname = null
+                if umatch?
+                  mid = umatch.Details.MatchId
+                  teamn = if uplyr.Team is 0 then "Radiant" else "Dire"
+                  cname = teamn+" "+mid
+                if umatch? && currentChannels[cname]? && currentChannels[cname].cid? && currentChannels[cname].cid isnt 0
+                  tchan = currentChannels[cname]
+                  if tchan.cid isnt client.cid
+                    log "moving client #{client.client_nickname} into #{cname}"
                     cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
                       if err?
-                        log "unable to move client to lobby... #{util.inspect err}"
+                        log "unable to move client to channel... #{util.inspect err}"
+                else
+                  tchan = currentChannels["Lobby"]
+                  bchan = currentChannels["Bounce"]
+                  if ((bchan? and bchan.cid? and client.cid is bchan.cid) or (uchan.cid? && client.cid is uchan.cid)) && (tchan.cid? && tchan.cid != 0)
+                    log "moving client #{client.client_nickname} out of unknown/bounce channel"
+                    if user.vouch.leagues? && user.vouch.leagues.length > 0
+                      moveClientToHome(client, currentServerChannels)
+                    else
+                      cl.send 'clientmove', {cid: tchan.cid, clid: client.clid}, (err)->
+                        if err?
+                          log "unable to move client to lobby... #{util.inspect err}"
             else
               tchan = currentChannels["Unknown"]
               if tchan.cid? && tchan.cid != 0 && client.cid isnt tchan.cid
