@@ -469,7 +469,7 @@ updateTeamspeak = (myid)->
 
             uchan = currentChannels["Unknown"]
             if user?
-              if !user.vouch? or user.vouch.leagues.length is 0
+              if !user.vouch? or !user.vouch.leagues? or user.vouch.leagues.length is 0
                 cl.send 'clientkick', {clid: client.clid, reasonid: 5, reasonmsg: "You are not vouched into the league."}, (err)->
                   if err?
                     console.log "Cannot kick #{client.clid}, #{err}"
