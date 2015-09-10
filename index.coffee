@@ -84,6 +84,21 @@ defaultChannels =
     channel_codec_quality: 10
     channel_flag_permanent: 1
     channel_description: "Lounge 3"
+  "Lounge 4":
+    channel_name: "Lounge 4"
+    channel_codec_quality: 10
+    channel_flag_permanent: 1
+    channel_description: "Lounge 4"
+  "Lounge 5":
+    channel_name: "Lounge 5"
+    channel_codec_quality: 10
+    channel_flag_permanent: 1
+    channel_description: "Lounge 5"
+  "Lounge 6":
+    channel_name: "Lounge 6"
+    channel_codec_quality: 10
+    channel_flag_permanent: 1
+    channel_description: "Lounge 6"
   "[spacer1]":
     channel_name: "[spacer1]"
     channel_flag_permanent: 1
